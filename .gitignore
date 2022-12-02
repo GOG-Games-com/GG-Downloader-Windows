@@ -6,8 +6,6 @@
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
-bin/
-obj/
 
 # Local History for Visual Studio Code
 .history/
@@ -70,6 +68,8 @@ nunit-*.xml
 [Dd]ebugPS/
 [Rr]eleasePS/
 dlldata.c
+
+.DS_Store
 
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
