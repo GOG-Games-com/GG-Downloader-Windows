@@ -1,0 +1,16 @@
+﻿<Properties GitUserInfo="UsingGIT" StartupConfiguration="{241342E1-D4E9-4763-A06C-804F642D3BD8}|Default">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workbench>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="GG-Downloader-Windows" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints />
+  <MonoDevelop.Ide.ItemProperties.gg-downloader PreferredExecutionTarget="net7.0" />
+</Properties>

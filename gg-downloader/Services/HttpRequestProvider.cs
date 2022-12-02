@@ -8,10 +8,19 @@ namespace gg_downloader.Services
 {
     internal class HttpRequest
     {
-        public static async Task< HttpResponseMessage> Get(Uri uri)
+
+        static readonly HttpClient client;
+
+        static HttpRequest()
         {
 
-            HttpClient client = new HttpClient();
+          
+             client = new HttpClient();
+
+        }
+
+        public static async Task< HttpResponseMessage> Get(Uri uri)
+        {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("GOG-Downloader-Win/1.0");
 
             HttpResponseMessage response = await client.GetAsync(uri);
@@ -20,8 +29,6 @@ namespace gg_downloader.Services
 
         public static async Task<HttpResponseMessage> Get(Uri uri, string username, string password)
         {
-
-            HttpClient client = new HttpClient();
 
             byte[] byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));

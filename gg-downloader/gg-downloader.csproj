@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net48;net7.0-windows</TargetFrameworks>
+		<TargetFrameworks>net7.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>gg_downloader</RootNamespace>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<NoWarn>NU1701</NoWarn>
 		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
