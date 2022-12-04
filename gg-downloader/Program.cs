@@ -28,12 +28,7 @@ namespace gg_downloader
         {
 
             // Initialize the settings Provider
-#if USE_REGISTRY
-            _settings = new RegistrySettingsProvider(GOG_GAMES_CDN_ROOT);
-#else
-            // a compiler symbol indicating a specific settings provider, so we'll use the default (INI).
             _settings = new INISettingsProvider(GOG_GAMES_CDN_ROOT);
-#endif
 
             RootCommand rootCommand = new RootCommand("Download files from GOG Games CDN.");
 
