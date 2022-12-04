@@ -9,15 +9,7 @@ namespace gg_downloader.Services
     internal class HttpRequest
     {
 
-        static readonly HttpClient client;
-
-        static HttpRequest()
-        {
-
-          
-             client = new HttpClient();
-
-        }
+        static readonly HttpClient client = new HttpClient();
 
         public static async Task< HttpResponseMessage> Get(Uri uri)
         {

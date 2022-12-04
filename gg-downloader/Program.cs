@@ -10,10 +10,11 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using gg_downloader.Interfaces;
 using gg_downloader.Services;
+using gg_downloader.Models;
 #if SFV
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
-#endif 
+#endif
 
 namespace gg_downloader
 {
@@ -183,21 +184,29 @@ namespace gg_downloader
             // grab the page content from the returned HttpResponseMessage
             string pageContent = await page.Content.ReadAsStringAsync();
 
-            List<string> gameFiles = game ? ExtractGameFilesFromPage(pageContent) : new List<string>();
-            List<string> goodiesFiles = goodies ? ExtractGoodiesFromPage(pageContent) : new List<string>();
-            List<string> patchesFiles = patches ? ExtractPatchesFromPage(pageContent) : new List<string>();
+            List<FileToDownloadInfo> files = new List<FileToDownloadInfo>();
+            if (game) files.AddRange(ExtractGameFilesFromPage(pageContent));
+            if (goodies) files.AddRange(ExtractGoodiesFromPage(pageContent));
+            if (patches) files.AddRange(ExtractPatchesFromPage(pageContent));
 
-            Console.WriteLine($"Downloading {gameFiles.Count} game files, {goodiesFiles.Count} goodies and {patchesFiles.Count} patches.");
+            {
+                int gamesCount = files.Count(f => f.Type == FileToDownloadInfo.FileType.Game);
+                int goodiesCount = files.Count(f => f.Type == FileToDownloadInfo.FileType.Goody);
+                int patchesCount = files.Count(f => f.Type == FileToDownloadInfo.FileType.Patch);
+                Console.WriteLine($"Downloading {gamesCount} game files, {goodiesCount} goodies and {patchesCount} patches.");
+            }
 
             if (!noDir)
             {
                 Directory.CreateDirectory(slug);
             } 
 
-            foreach (string file in gameFiles.Union(goodiesFiles).Union(patchesFiles))
+            foreach (FileToDownloadInfo file in files)
             {
-                string url = downloadRoot + "/" + (file.Contains("patch") ? "patches/" : "downloads/") + slug + "/"+ file;
-                string filename = (noDir ? "./" : slug + "/") + file;
+                string url = downloadRoot + "/" + 
+                    (file.Type == FileToDownloadInfo.FileType.Patch ? "patches/" : "downloads/" + slug) + 
+                    "/"+ file.FileName;
+                string filename = (noDir ? "./" : slug + "/") + file.FileName;
                 
                 Console.WriteLine($"Downloading {url}");
                 uint crc32CheckSum;
@@ -210,20 +219,20 @@ namespace gg_downloader
 
                     crc32CheckSum = await client.StartDownload();
                 }
-                Console.WriteLine($"\r{file} downloaded.");
+                Console.WriteLine($"\r{file.FileName} downloaded.");
 
                 if (noVerify) continue;
 
                 // check the file against the sfv dictionary.
-                if (crc32CheckSum.ToString("X8").ToLower() != sfvDictionary[file])
+                if (crc32CheckSum.ToString("X8").ToLower() != sfvDictionary[file.FileName])
                 {
-                    Console.WriteLine($"\r{file} failed SFV validation.");
+                    Console.WriteLine($"\r{file.FileName} failed SFV validation.");
                     Console.WriteLine("Halting...");
                     return;
                 }
                 else
                 {
-                    Console.WriteLine($"\r{file} passed SFV validation.");
+                    Console.WriteLine($"\r{file.FileName} passed SFV validation.");
                 }
             }
 
@@ -251,22 +260,40 @@ namespace gg_downloader
             return result;
         }
 
-        private static List<string> ExtractGameFilesFromPage(string pageContent)
+        private static List<FileToDownloadInfo> ExtractGameFilesFromPage(string pageContent)
         {
             Regex fileBlockRegex = new Regex(@"Game Items Included<\/div>\s([\S\s]+?)<\/div>\s<\/div>");
-            return ExtractFilesFromPage(fileBlockRegex, pageContent);
+            List<string> filesInBlock = ExtractFilesFromPage(fileBlockRegex, pageContent);
+            List<FileToDownloadInfo> results = new List<FileToDownloadInfo>();
+            foreach (string s in filesInBlock)
+            {
+                results.Add(new FileToDownloadInfo {  FileName = s, Type = FileToDownloadInfo.FileType.Game });
+            }
+            return results;
         }
 
-        private static List<string> ExtractGoodiesFromPage(string pageContent)
+        private static List<FileToDownloadInfo> ExtractGoodiesFromPage(string pageContent)
         {
             Regex goodiesBlockRegex = new Regex(@"Goodies Included<\/div>\s([\S\s]+?)<\/div>\s<\/div>");
-            return ExtractFilesFromPage(goodiesBlockRegex, pageContent);
+            List<string> filesInBlock = ExtractFilesFromPage(goodiesBlockRegex, pageContent);
+            List<FileToDownloadInfo> results = new List<FileToDownloadInfo>();
+            foreach (string s in filesInBlock)
+            {
+                results.Add(new FileToDownloadInfo { FileName = s, Type = FileToDownloadInfo.FileType.Goody });
+            }
+            return results;
         }
 
-        private static List<string> ExtractPatchesFromPage(string pageContent)
+        private static List<FileToDownloadInfo> ExtractPatchesFromPage(string pageContent)
         {
             Regex patchesBlockRegex = new Regex(@"Other Items Included<\/div>\s([\S\s]+?)<\/div>\s<\/div>");
-            return ExtractFilesFromPage(patchesBlockRegex, pageContent);
+            List<string> filesInBlock = ExtractFilesFromPage(patchesBlockRegex, pageContent);
+            List<FileToDownloadInfo> results = new List<FileToDownloadInfo>();
+            foreach (string s in filesInBlock)
+            {
+                results.Add(new FileToDownloadInfo { FileName = s, Type = FileToDownloadInfo.FileType.Patch });
+            }
+            return results;
         }
 
         private static Uri ConvertSlugOrUrlToUri(string slugOrUrl)
