@@ -30,6 +30,19 @@ namespace gg_downloader
             // Initialize the settings Provider
             _settings = new INISettingsProvider(GOG_GAMES_CDN_ROOT);
 
+            // For Windows 7, we specifically need to tell the ServicePointManager to use 
+            // TLS1.2. As we can only be running the .NET Framework version on Windows 7,
+            // we'll conditionally compile this out by checking for .NET 5.0. OS Version 6.1
+            // equates to Windows 7 _or_ Windows Server 2008, and hey, this fix is probably
+            // needed for it too.
+#if !NET
+            if (System.Environment.OSVersion.Version.Major == 6 &&
+                System.Environment.OSVersion.Version.Minor == 1)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            }
+#endif
+
             RootCommand rootCommand = new RootCommand("Download files from GOG Games CDN.");
 
             Command donateCommand = new Command("donate", "open the GOG Games Store link for CDN access");
